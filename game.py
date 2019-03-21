@@ -6,10 +6,10 @@ screenWidth = 750
 screenHeight = 480
 win = pygame.display.set_mode((screenWidth, screenHeight))
 
-walkRight = [pygame.image.load('images/R1.png'), pygame.image.load('images/R2.png'), pygame.image.load('images/R3.png'), pygame.image.load('images/R4.png'), pygame.image.load('images/R5.png'), pygame.image.load('images/R6.png'), pygame.image.load('images/R7.png'), pygame.image.load('images/R8.png'), pygame.image.load('images/R9.png')]
-walkLeft = [pygame.image.load('images/L1.png'), pygame.image.load('images/L2.png'), pygame.image.load('images/L3.png'), pygame.image.load('images/L4.png'), pygame.image.load('images/L5.png'), pygame.image.load('images/L6.png'), pygame.image.load('images/L7.png'), pygame.image.load('images/L8.png'), pygame.image.load('images/L9.png')]
-bg = pygame.image.load('images/bg.jpg')
-char = pygame.image.load('images/standing.png')
+walkRight = [pygame.image.load('assets/images/R1.png'), pygame.image.load('assets/images/R2.png'), pygame.image.load('assets/images/R3.png'), pygame.image.load('assets/images/R4.png'), pygame.image.load('assets/images/R5.png'), pygame.image.load('assets/images/R6.png'), pygame.image.load('assets/images/R7.png'), pygame.image.load('assets/images/R8.png'), pygame.image.load('assets/images/R9.png')]
+walkLeft = [pygame.image.load('assets/images/L1.png'), pygame.image.load('assets/images/L2.png'), pygame.image.load('assets/images/L3.png'), pygame.image.load('assets/images/L4.png'), pygame.image.load('assets/images/L5.png'), pygame.image.load('assets/images/L6.png'), pygame.image.load('assets/images/L7.png'), pygame.image.load('assets/images/L8.png'), pygame.image.load('assets/images/L9.png')]
+bg = pygame.image.load('assets/images/bg2.jpg')
+char = pygame.image.load('assets/images/standing.png')
 
 # Giving the game a title
 pygame.display.set_caption("My First Python Game")
@@ -58,19 +58,60 @@ class Projectile(object):
     def draw(self, win):
         pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
 
+class Enemy(object):
+    walkRight = [pygame.image.load('assets/images/R1E.png'), pygame.image.load('assets/images/R2E.png'), pygame.image.load('assets/images/R3E.png'), pygame.image.load('assets/images/R4E.png'), pygame.image.load('assets/images/R5E.png'), pygame.image.load('assets/images/R6E.png'), pygame.image.load('assets/images/R7E.png'), pygame.image.load('assets/images/R8E.png'), pygame.image.load('assets/images/R9E.png'), pygame.image.load('assets/images/R10E.png'), pygame.image.load('assets/images/R11E.png')]
+    walkLeft = [pygame.image.load('assets/images/L1E.png'), pygame.image.load('assets/images/L2E.png'), pygame.image.load('assets/images/L3E.png'), pygame.image.load('assets/images/L4E.png'), pygame.image.load('assets/images/L5E.png'), pygame.image.load('assets/images/L6E.png'), pygame.image.load('assets/images/L7E.png'), pygame.image.load('assets/images/L8E.png'), pygame.image.load('assets/images/L9E.png'), pygame.image.load('assets/images/L10E.png'), pygame.image.load('assets/images/L11E.png')]
+
+    def __init__(self, x, y, enemyWidth, enemyHeight, end):
+        self.x = x
+        self.y = y
+        self.enemyWidth = enemyWidth
+        self.enemyHeight = enemyHeight
+        self.end = end
+        self.path = [self.x, self.end]
+        self.walkCount = 0
+        self.vel = 3
+
+    def draw(self, win):
+        self.move()
+        if self.walkCount + 1 >= 33:
+            self.walkCount = 0
+        
+        if self.vel > 0:
+            win.blit(self.walkRight[self.walkCount // 3], (self.x, self.y))
+            self.walkCount += 1
+        else:
+            win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
+            self.walkCount += 1
+    
+    def move(self):
+        if self.vel > 0:
+            if self.x + self.vel < self.path[1]:
+                self.x += self.vel
+            else:
+                self.vel = self.vel * -1
+                self.walkCount = 0
+        else:
+            if self.x - self.vel > self.path[0  ]:
+                self.x += self.vel
+            else:
+                self.vel = self.vel * -1
+                self.walkCount = 0
+        
 
 def redraw_game_window():
     # Fill the screen before drawing the new character
     win.blit(bg, (0, 0))
     man.draw(win)
+    goblin.draw(win)
 
     for bullet in bullets:
         bullet.draw(win)
     # Refresh the display and show the character
     pygame.display.update()
 
-man = Player(300, 410, 64, 64)
-
+man = Player(300, 380, 64, 64)
+goblin = Enemy(100, 385, 64, 64, 650)
 # Main loop
 run = True
 bullets = []
