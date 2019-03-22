@@ -29,22 +29,25 @@ class Player(object):
         self.right = False
         self.walkCount = 0
         self.standing = True
+        self.hitbox = (self.x + 15, self.y + 10, 29, 52)
 
     def draw(self, win):
         if self.walkCount + 1 >= 27:
             self.walkCount = 0
         if not(self.standing):
             if self.left:
-                win.blit(walkLeft[self.walkCount // 3], (self.x,self.y))
+                win.blit(walkLeft[self.walkCount // 3], (self.x, self.y))
                 self.walkCount += 1
             elif self.right:
-                win.blit(walkRight[self.walkCount // 3], (self.x,self.y))
+                win.blit(walkRight[self.walkCount // 3], (self.x, self.y))
             self.walkCount += 1
         else:
             if self.right:
                 win.blit(walkRight[0], (self.x, self.y))
             else:
                 win.blit(walkLeft[0],(self.x, self.y))
+        self.hitbox = (self.x + 15, self.y + 10, 29, 52)
+        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
 class Projectile(object):
     def __init__(self, x, y, radius, color, facing):
@@ -71,6 +74,7 @@ class Enemy(object):
         self.path = [self.x, self.end]
         self.walkCount = 0
         self.vel = 3
+        self.hitbox = (self.x + 15, self.y + 12, 28, 48)
 
     def draw(self, win):
         self.move()
@@ -83,6 +87,8 @@ class Enemy(object):
         else:
             win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
             self.walkCount += 1
+        self.hitbox = (self.x + 15, self.y + 12, 28, 48)
+        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
     
     def move(self):
         if self.vel > 0:
@@ -97,6 +103,9 @@ class Enemy(object):
             else:
                 self.vel = self.vel * -1
                 self.walkCount = 0
+
+    def hit(self):
+        print('hit')
         
 
 def redraw_game_window():
@@ -114,9 +123,16 @@ man = Player(300, 385, 64, 64)
 skeleton = Enemy(50, 385, 64, 64, 650)
 # Main loop
 run = True
+bulletCooldown = 0
 bullets = []
 while run:
     clock.tick(27)
+
+    if bulletCooldown > 0:
+        bulletCooldown += 1
+    if bulletCooldown > 3:
+        bulletCooldown = 0
+    
 
     # Check if certain events have happened
     for event in pygame.event.get():
@@ -124,6 +140,10 @@ while run:
             run = False
 
     for bullet in bullets:
+        if bullet.y - bullet.radius < skeleton.hitbox[1] + skeleton.hitbox[3] and bullet.y + bullet.radius > skeleton.hitbox[1]:
+            if bullet.x + bullet.radius > skeleton.hitbox[0] and bullet.x - bullet.radius < skeleton.hitbox[0] + skeleton.hitbox[2]:
+                skeleton.hit()
+                bullets.pop(bullets.index(bullet))
         if bullet.x < 750 and bullet.x > 0:
             bullet.x += bullet.vel
         else:
@@ -133,13 +153,15 @@ while run:
     # Check which key has been pressed and the coordinates with the velocity
     keys = pygame.key.get_pressed()
 
-    if keys[pygame.K_SPACE]:
+    if keys[pygame.K_SPACE] and bulletCooldown == 0:
         if man.left:
             facing = -1
         else:
             facing = 1
         if len(bullets) < 5:    
             bullets.append(Projectile(round(man.x + man.characterWidth // 2), round(man.y + man.characterHeight // 2), 6, (206,23,79), facing))
+
+        bulletCooldown = 1
 
     if keys[pygame.K_LEFT] and man.x > man.vel:
         man.x -= man.vel
