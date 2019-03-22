@@ -2,14 +2,14 @@ import pygame
 pygame.init()
 
 # Creating the window of the game
-screenWidth = 750
+screenWidth = 700
 screenHeight = 480
 win = pygame.display.set_mode((screenWidth, screenHeight))
 
-walkRight = [pygame.image.load('assets/images/R1.png'), pygame.image.load('assets/images/R2.png'), pygame.image.load('assets/images/R3.png'), pygame.image.load('assets/images/R4.png'), pygame.image.load('assets/images/R5.png'), pygame.image.load('assets/images/R6.png'), pygame.image.load('assets/images/R7.png'), pygame.image.load('assets/images/R8.png'), pygame.image.load('assets/images/R9.png')]
-walkLeft = [pygame.image.load('assets/images/L1.png'), pygame.image.load('assets/images/L2.png'), pygame.image.load('assets/images/L3.png'), pygame.image.load('assets/images/L4.png'), pygame.image.load('assets/images/L5.png'), pygame.image.load('assets/images/L6.png'), pygame.image.load('assets/images/L7.png'), pygame.image.load('assets/images/L8.png'), pygame.image.load('assets/images/L9.png')]
-bg = pygame.image.load('assets/images/bg2.jpg')
-char = pygame.image.load('assets/images/standing.png')
+walkRight = [pygame.image.load('assets/images/mage/R1.png'), pygame.image.load('assets/images/mage/R2.png'), pygame.image.load('assets/images/mage/R3.png'), pygame.image.load('assets/images/mage/R4.png'), pygame.image.load('assets/images/mage/R5.png'), pygame.image.load('assets/images/mage/R6.png'), pygame.image.load('assets/images/mage/R7.png'), pygame.image.load('assets/images/mage/R8.png'), pygame.image.load('assets/images/mage/R9.png')]
+walkLeft = [pygame.image.load('assets/images/mage/L1.png'), pygame.image.load('assets/images/mage/L2.png'), pygame.image.load('assets/images/mage/L3.png'), pygame.image.load('assets/images/mage/L4.png'), pygame.image.load('assets/images/mage/L5.png'), pygame.image.load('assets/images/mage/L6.png'), pygame.image.load('assets/images/mage/L7.png'), pygame.image.load('assets/images/mage/L8.png'), pygame.image.load('assets/images/mage/L9.png')]
+bg = pygame.image.load('assets/images/background/graveyard.jpg')
+char = pygame.image.load('assets/images/mage/standing.png')
 
 # Giving the game a title
 pygame.display.set_caption("My First Python Game")
@@ -59,8 +59,8 @@ class Projectile(object):
         pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
 
 class Enemy(object):
-    walkRight = [pygame.image.load('assets/images/R1E.png'), pygame.image.load('assets/images/R2E.png'), pygame.image.load('assets/images/R3E.png'), pygame.image.load('assets/images/R4E.png'), pygame.image.load('assets/images/R5E.png'), pygame.image.load('assets/images/R6E.png'), pygame.image.load('assets/images/R7E.png'), pygame.image.load('assets/images/R8E.png'), pygame.image.load('assets/images/R9E.png'), pygame.image.load('assets/images/R10E.png'), pygame.image.load('assets/images/R11E.png')]
-    walkLeft = [pygame.image.load('assets/images/L1E.png'), pygame.image.load('assets/images/L2E.png'), pygame.image.load('assets/images/L3E.png'), pygame.image.load('assets/images/L4E.png'), pygame.image.load('assets/images/L5E.png'), pygame.image.load('assets/images/L6E.png'), pygame.image.load('assets/images/L7E.png'), pygame.image.load('assets/images/L8E.png'), pygame.image.load('assets/images/L9E.png'), pygame.image.load('assets/images/L10E.png'), pygame.image.load('assets/images/L11E.png')]
+    walkRight = [pygame.image.load('assets/images/skeleton/R1E.png'), pygame.image.load('assets/images/skeleton/R2E.png'), pygame.image.load('assets/images/skeleton/R3E.png'), pygame.image.load('assets/images/skeleton/R4E.png'), pygame.image.load('assets/images/skeleton/R5E.png'), pygame.image.load('assets/images/skeleton/R6E.png'), pygame.image.load('assets/images/skeleton/R7E.png'), pygame.image.load('assets/images/skeleton/R8E.png'), pygame.image.load('assets/images/skeleton/R9E.png')]
+    walkLeft = [pygame.image.load('assets/images/skeleton/L1E.png'), pygame.image.load('assets/images/skeleton/L2E.png'), pygame.image.load('assets/images/skeleton/L3E.png'), pygame.image.load('assets/images/skeleton/L4E.png'), pygame.image.load('assets/images/skeleton/L5E.png'), pygame.image.load('assets/images/skeleton/L6E.png'), pygame.image.load('assets/images/skeleton/L7E.png'), pygame.image.load('assets/images/skeleton/L8E.png'), pygame.image.load('assets/images/skeleton/L9E.png')]
 
     def __init__(self, x, y, enemyWidth, enemyHeight, end):
         self.x = x
@@ -74,7 +74,7 @@ class Enemy(object):
 
     def draw(self, win):
         self.move()
-        if self.walkCount + 1 >= 33:
+        if self.walkCount + 1 >= 27:
             self.walkCount = 0
         
         if self.vel > 0:
@@ -103,15 +103,15 @@ def redraw_game_window():
     # Fill the screen before drawing the new character
     win.blit(bg, (0, 0))
     man.draw(win)
-    goblin.draw(win)
+    skeleton.draw(win)
 
     for bullet in bullets:
         bullet.draw(win)
     # Refresh the display and show the character
     pygame.display.update()
 
-man = Player(300, 380, 64, 64)
-goblin = Enemy(100, 385, 64, 64, 650)
+man = Player(300, 385, 64, 64)
+skeleton = Enemy(50, 385, 64, 64, 650)
 # Main loop
 run = True
 bullets = []
@@ -139,7 +139,7 @@ while run:
         else:
             facing = 1
         if len(bullets) < 5:    
-            bullets.append(Projectile(round(man.x + man.characterWidth // 2), round(man.y + man.characterHeight // 2), 6, (65,105,225), facing))
+            bullets.append(Projectile(round(man.x + man.characterWidth // 2), round(man.y + man.characterHeight // 2), 6, (206,23,79), facing))
 
     if keys[pygame.K_LEFT] and man.x > man.vel:
         man.x -= man.vel
@@ -163,7 +163,7 @@ while run:
             neg = 1
             if man.jumpCount < 0:
                 neg = -1
-            man.y -= (man.jumpCount ** 2) * 0.5 * neg
+            man.y -= (man.jumpCount ** 2) * 0.3 * neg
             man.jumpCount -= 1
         else:
             man.isJump = False
