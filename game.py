@@ -7,8 +7,6 @@ screenHeight = 480
 win = pygame.display.set_mode((screenWidth, screenHeight))
 
 # Loading in each character sprite.
-walkRight = [pygame.image.load('assets/images/mage/R1.png'), pygame.image.load('assets/images/mage/R2.png'), pygame.image.load('assets/images/mage/R3.png'), pygame.image.load('assets/images/mage/R4.png'), pygame.image.load('assets/images/mage/R5.png'), pygame.image.load('assets/images/mage/R6.png'), pygame.image.load('assets/images/mage/R7.png'), pygame.image.load('assets/images/mage/R8.png'), pygame.image.load('assets/images/mage/R9.png')]
-walkLeft = [pygame.image.load('assets/images/mage/L1.png'), pygame.image.load('assets/images/mage/L2.png'), pygame.image.load('assets/images/mage/L3.png'), pygame.image.load('assets/images/mage/L4.png'), pygame.image.load('assets/images/mage/L5.png'), pygame.image.load('assets/images/mage/L6.png'), pygame.image.load('assets/images/mage/L7.png'), pygame.image.load('assets/images/mage/L8.png'), pygame.image.load('assets/images/mage/L9.png')]
 bg = pygame.image.load('assets/images/background/graveyard.jpg')
 char = pygame.image.load('assets/images/mage/standing.png')
 
@@ -17,9 +15,21 @@ pygame.display.set_caption("My First Python Game")
 
 clock = pygame.time.Clock()
 
+bulletSound = pygame.mixer.Sound('assets/sounds/bullet.wav')
+hitSound = pygame.mixer.Sound('assets/sounds/hit.wav')
+jumpSound = pygame.mixer.Sound('assets/sounds/jump.wav')
+pointSound = pygame.mixer.Sound('assets/sounds/point.wav')
+gameoverSound = pygame.mixer.Sound('assets/sounds/gameover.wav')
+
+music = pygame.mixer.music.load('assets/sounds/music.mp3')
+pygame.mixer.music.play(-1)
+
 score = 0
 
 class Player(object):
+    walkRight = [pygame.image.load('assets/images/mage/R1.png'), pygame.image.load('assets/images/mage/R2.png'), pygame.image.load('assets/images/mage/R3.png'), pygame.image.load('assets/images/mage/R4.png'), pygame.image.load('assets/images/mage/R5.png'), pygame.image.load('assets/images/mage/R6.png'), pygame.image.load('assets/images/mage/R7.png'), pygame.image.load('assets/images/mage/R8.png'), pygame.image.load('assets/images/mage/R9.png')]
+    walkLeft = [pygame.image.load('assets/images/mage/L1.png'), pygame.image.load('assets/images/mage/L2.png'), pygame.image.load('assets/images/mage/L3.png'), pygame.image.load('assets/images/mage/L4.png'), pygame.image.load('assets/images/mage/L5.png'), pygame.image.load('assets/images/mage/L6.png'), pygame.image.load('assets/images/mage/L7.png'), pygame.image.load('assets/images/mage/L8.png'), pygame.image.load('assets/images/mage/L9.png')]
+
     def __init__(self, x, y, characterWidth, characterHeight):
         self.x = x
         self. y = y
@@ -33,27 +43,45 @@ class Player(object):
         self.walkCount = 0
         self.standing = True
         self.hitbox = (self.x + 15, self.y + 10, 29, 52)
+        self.health = 10
+        self.visible = True
 
     # This function is meant to create a walk animation for the character.
     def draw(self, win):
-        if self.walkCount + 1 >= 27:
-            self.walkCount = 0
-        if not(self.standing):
-            if self.left:
-                win.blit(walkLeft[self.walkCount // 3], (self.x, self.y))
+        if self.visible:
+            if self.walkCount + 1 >= 27:
+                self.walkCount = 0
+            if not(self.standing):
+                if self.left:
+                    win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
+                    self.walkCount += 1
+                elif self.right:
+                    win.blit(self.walkRight[self.walkCount // 3], (self.x, self.y))
                 self.walkCount += 1
-            elif self.right:
-                win.blit(walkRight[self.walkCount // 3], (self.x, self.y))
-            self.walkCount += 1
-        else:
-            if self.right:
-                win.blit(walkRight[0], (self.x, self.y))
             else:
-                win.blit(walkLeft[0],(self.x, self.y))
-        
-        # Creating a hitbox around the character.
-        self.hitbox = (self.x + 15, self.y + 10, 29, 52)
-        # pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+                if self.right:
+                    win.blit(self.walkRight[0], (self.x, self.y))
+                else:
+                    win.blit(self.walkLeft[0],(self.x, self.y))
+
+            # Drawing the health bar of the enemy.
+            pygame.draw.rect(win, (255,0,0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
+
+            # Substract from the health bar width each time enemy is hit
+            pygame.draw.rect(win, (0,255,0), (self.hitbox[0], self.hitbox[1] - 20, 50 - (5 * (10 - self.health)), 10))
+            
+            # Creating a hitbox around the character.
+            self.hitbox = (self.x + 15, self.y + 10, 29, 52)
+            # pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+    
+    def hit(self):
+        if self.health > 0:
+            self.health -= 1
+        else:
+            self.visible = False
+            gameoverSound.play()
+            
+        print('Character hit')
 
 class Projectile(object):
     def __init__(self, x, y, radius, color, facing):
@@ -117,19 +145,19 @@ class Enemy(object):
                 self.vel = self.vel * -1
                 self.walkCount = 0
         else:
-            if self.x - self.vel > self.path[0  ]:
+            if self.x - self.vel > self.path[0]:
                 self.x += self.vel
             else:
                 self.vel = self.vel * -1
                 self.walkCount = 0
 
-    # This functio is meant to put out data each time the enemy is hit.
+    # This function is meant to put out data each time the enemy is hit.
     def hit(self):
         if self.health > 0:
             self.health -= 1
         else:
             self.visible = False
-        print('hit')
+        print('Enemy hit')
         
 # This is meant to update the game window else the character and enemy won't be displayed.
 def redraw_game_window():
@@ -156,6 +184,14 @@ bullets = []
 while run:
     clock.tick(27)
 
+    if man.hitbox[1] < skeleton.hitbox[1] + skeleton.hitbox[3] and man.hitbox[1] + man.hitbox[3] > skeleton.hitbox[1]:
+        if man.hitbox[0] + man.hitbox[2] > skeleton.hitbox[0] and man.hitbox[0] < skeleton.hitbox[0] + skeleton.hitbox[2]:
+            man.hit()
+            if score >= 5:
+                score -= 5
+            else:
+                score = 0
+
     # The cooldown is meant so the character can't spam the bullets too often.
     if bulletCooldown > 0:
         bulletCooldown += 1
@@ -171,6 +207,7 @@ while run:
     for bullet in bullets:
         if bullet.y - bullet.radius < skeleton.hitbox[1] + skeleton.hitbox[3] and bullet.y + bullet.radius > skeleton.hitbox[1]:
             if bullet.x + bullet.radius > skeleton.hitbox[0] and bullet.x - bullet.radius < skeleton.hitbox[0] + skeleton.hitbox[2]:
+                hitSound.play()
                 skeleton.hit()
                 score += 1
                 bullets.pop(bullets.index(bullet))
@@ -184,6 +221,7 @@ while run:
 
     # Shoots bullets into the direction the character is currently facing.
     if keys[pygame.K_SPACE] and bulletCooldown == 0:
+        bulletSound.play()
         if man.left:
             facing = -1
         else:
@@ -208,6 +246,7 @@ while run:
         man.walkCount = 0
     if not (man.isJump):
         if keys[pygame.K_UP]:
+            jumpSound.play()
             man.isJump = True
             man.walkCount = 0
     else:
